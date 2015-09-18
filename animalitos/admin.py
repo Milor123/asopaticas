@@ -45,7 +45,7 @@ class AdoptarInLine(admin.StackedInline):
 @admin.register(Animal)
 class AnimalInline(admin.ModelAdmin):
 
-    list_display = ('nombre','tipo_de_animal','estado_de_salud', 'numero_telefono','sexo','edad', 'color','adoptantes','fecha_de_adopcion', 'esterilizado','edad_desde_adopcion')
+    list_display = ('nombre','tipo_de_animal','estado_de_salud', 'numero_telefono','sexo','edad', 'color','adoptantes','fecha_de_adopcion', 'esterilizado','edad_desde_adopcion','foto_url')
     search_fields = ('nombre', 'adoptar__Adoptante_idAdoptante__idAdoptante','adoptar__Adoptante_idAdoptante__telefono')
     readonly_fields = ('image_tag',)
     inlines = [AdoptarInLine,]
@@ -107,12 +107,26 @@ class AnimalInline(admin.ModelAdmin):
             return adoptante.fecha
         except:
             return 0
+
+    def foto_url(self, Animal):
+        try:
+            adoptante = Adoptar.objects.filter(Animal_idAnimal = Animal.idAnimal).order_by('-fecha').first()
+            if bool (adoptante.Animal_idAnimal.foto):
+                return mark_safe('<a href="/images/%s" target="_blank">Open photo</a>'% (adoptante.Animal_idAnimal.foto))
+            else:
+                return mark_safe('<b>Nope</b>')
+        except:
+            return 'No tiene foto'
+
+
     esterilizado.admin_order_field='es_esterilizado'
     estado_de_salud.admin_order_field='salud'
     fecha_de_adopcion.admin_order_field='adoptar__fecha'
     adoptantes.admin_order_field = 'adoptar__Adoptante_idAdoptante'
     numero_telefono.admin_order_field= 'adoptar__Adoptante_idAdoptante__telefono'
     edad_desde_adopcion.admin_order_field='adoptar__fecha'
+    foto_url.admin_order_field='adoptar__Animal_idAnimal__foto'
+
 
 @admin.register(Adoptante)
 class Adoptante(admin.ModelAdmin):
@@ -125,9 +139,9 @@ class Adoptante(admin.ModelAdmin):
         try:
             adoptante = Adoptar.objects.filter(Adoptante_idAdoptante = Adoptante.idAdoptante).order_by('-fecha').first()
             if not bool(adoptante.Animal_idAnimal.foto):
-                return mark_safe('<img src="/images/pic_folder/404animal.jpg" height="50" width="50">')
+                return mark_safe('<img src="/images/pic_folder/noimage.png" height="50" width="50">')
             else:
-                return mark_safe('<a href="/images/%s"><img src="/images/%s" height="50" width="50"> ' %(adoptante.Animal_idAnimal.foto,adoptante.Animal_idAnimal.foto))
+                return mark_safe('<a href="/images/%s" target="_blank"><img src="/images/%s" height="50" width="50"> </a>' %(adoptante.Animal_idAnimal.foto,adoptante.Animal_idAnimal.foto))
         except:
             return 0
     foto.admin_order_field='animal__foto'

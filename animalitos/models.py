@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.utils.safestring import mark_safe
 # Create your models here.
 
 
@@ -67,9 +68,12 @@ class Animal(models.Model):
 
     foto = models.ImageField(upload_to='pic_folder/',blank=True, null=True)
     def image_tag(self):
-        return u'<a href="/images/%s"><img src="/images/%s" height="200" width="200"> ' % (self.foto,self.foto)
+        if not bool(self.foto):
+            return mark_safe('<img src="/images/pic_folder/noimage.png" height="50" width="50">')
+        else:
+            return mark_safe('<a href="/images/%s" target="_blank"><img src="/images/%s" height="200" width="200"></a> ' % (self.foto,self.foto))
     image_tag.short_description = 'Image'
-    image_tag.allow_tags = True
+    #image_tag.allow_tags = True
 
 
     members = models.ManyToManyField(Adoptante, through='Adoptar', through_fields=('Animal_idAnimal', 'Adoptante_idAdoptante'))

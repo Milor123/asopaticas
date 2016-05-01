@@ -1,4 +1,4 @@
 # Asopaticas Project
 
-**Developing ...** 
+**Dropped Project...** 
 
